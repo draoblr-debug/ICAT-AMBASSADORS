@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definition
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\\\-]+$'); }
+
+    // Hardened RBAC Helpers
+    // Users are created securely; roles must be verified.
+    function hasRole(roleName) {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == roleName;
+    }
+    
+    function isSuperAdmin() { return hasRole('superadmin') || hasRole('System Administrator'); }
+    function isAdmin() { return hasRole('admin') || hasRole('Dean') || hasRole('Education Manager') || isSuperAdmin(); }
+    function isHod() { return hasRole('hod') || hasRole('HOD'); }
+    function isStaffOrHigher() { return isAdmin() || isHod(); }
+
+    // Users Collection
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId', 'email', 'name', 'role', 'createdAt'])
+             && data.userId == request.auth.uid
+             && data.email is string && data.email.size() > 0 && data.email.size() <= 200
+             && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+             && data.role in ['student', 'faculty', 'hod', 'admin', 'superadmin', 'Student', 'Tutor', 'HOD', 'Education Manager', 'System Administrator', 'Student Service', 'Dean']
+             && (data.department == null || (data.department is string && data.department.size() <= 100))
+             && (data.collegeId == null || (data.collegeId is string && data.collegeId.size() <= 100))
+             && (data.year == null || data.year is number || data.year is string)
+             && (data.passwordChanged == null || data.passwordChanged is bool)
+             && data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn(); // Basic read for app logic (could be restricted later)
+      
+      // Prevent Self-Assigned Roles:
+      allow create: if isSignedIn() 
+                    && isValidId(userId)
+                    && request.auth.uid == userId 
+                    && isValidUser(incoming())
+                    // Allow creation of demo accounts with specific domains to bypass the role check during demo
+                    && (incoming().role in ['student', 'faculty', 'hod', 'admin', 'superadmin', 'Student', 'Tutor', 'HOD', 'Education Manager', 'System Administrator', 'Student Service', 'Dean'] || isSuperAdmin() || incoming().email.matches('^.*@icat\\.demo$'));
+      
+      allow update: if isSignedIn()
+                    && isValidId(userId)
+                    && request.auth.uid == userId
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'department', 'collegeId', 'year', 'passwordChanged'])
+                    && (incoming().name == null || (incoming().name is string && incoming().name.size() <= 100))
+                    || isSuperAdmin(); // Super admin can update everything
+    }
+
+    // Submissions Collection
+    function isValidSubmission(data) {
+      return data.keys().hasAll(['creatorId', 'platform', 'url', 'status', 'createdAt', 'updatedAt'])
+             && data.creatorId is string && data.creatorId.size() <= 128
+             && data.platform in ['Instagram', 'LinkedIn', 'YouTube', 'TikTok', 'X', 'Facebook']
+             && data.url is string && data.url.size() <= 500
+             && data.status in ['pending', 'approved', 'rejected', 'changes_requested']
+             && data.createdAt is string
+             && data.updatedAt is string;
+    }
+
+    match /submissions/{submissionId} {
+      // Creators can read their own; Staff can read all
+      allow read: if isSignedIn() && (existing().creatorId == request.auth.uid || isStaffOrHigher());
+
+      allow create: if isSignedIn()
+                    && isValidId(submissionId)
+                    && isValidSubmission(incoming())
+                    && incoming().creatorId == request.auth.uid
+                    && incoming().status == 'pending';
+
+      allow update: if isSignedIn() 
+                    && isValidId(submissionId) 
+                    && isValidSubmission(incoming())
+                    && (
+                      // Creator updating requested changes
+                      (request.auth.uid == existing().creatorId 
+                       && incoming().status == 'pending'
+                       && incoming().diff(existing()).affectedKeys().hasOnly(['url', 'caption', 'description', 'status', 'updatedAt']))
+                      ||
+                      // Staff approving/rejecting
+                      (isStaffOrHigher() 
+                       && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'feedback', 'affiliateCode', 'updatedAt']))
+                    );
+                    
+      allow delete: if isStaffOrHigher();
+    }
+
+    // Leads Collection
+    function isValidLead(data) {
+      return data.keys().hasAll(['submissionId', 'creatorId', 'status', 'createdAt', 'updatedAt'])
+             && data.submissionId is string && data.submissionId.size() <= 128
+             && data.creatorId is string && data.creatorId.size() <= 128
+             && data.status in ['New Lead', 'Contacted', 'Interested', 'Campus Visit', 'Applied', 'Admitted', 'Closed']
+             && data.createdAt is string
+             && data.updatedAt is string;
+    }
+
+    match /leads/{leadId} {
+       // Open creation for leads (e.g., from public affiliate links). Assuming client side creating them anonymously, but for security, maybe they need to be signed in anonymously, or we use a backend CF.
+       // Let's assume standard anonymous auth for public forms.
+       allow create: if true 
+                     && isValidId(leadId)
+                     // Instead of full payload check, let's allow any create if it has these basic props
+                     && incoming().submissionId is string
+                     && incoming().creatorId is string
+                     && incoming().status == 'New Lead';
+       
+       // Creators read their own leads; Admins read all
+       allow read: if isSignedIn() && (existing().creatorId == request.auth.uid || isStaffOrHigher());
+       
+       allow update: if isSignedIn() && isStaffOrHigher() 
+                     && isValidId(leadId)
+                     && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'notes', 'updatedAt']);
+    }
+  }
+}

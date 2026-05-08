@@ -1,0 +1,75 @@
+/**
+ * Defines Data Structure, not live resources
+ */
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with roles",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "faculty", "hod", "admin", "superadmin"] },
+        "department": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "email", "name", "role", "createdAt"]
+    },
+    "Submission": {
+      "title": "Content Submission",
+      "description": "UGC post waiting for approval",
+      "type": "object",
+      "properties": {
+        "creatorId": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "department": { "type": "string" },
+        "platform": { "type": "string", "enum": ["Instagram", "LinkedIn", "YouTube", "TikTok", "X", "Facebook"] },
+        "url": { "type": "string" },
+        "caption": { "type": "string" },
+        "campaign": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "changes_requested"] },
+        "affiliateCode": { "type": ["string", "null"] },
+        "feedback": { "type": ["string", "null"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "leadsGenerated": { "type": "number" },
+        "conversions": { "type": "number" }
+      },
+      "required": ["creatorId", "platform", "url", "status", "createdAt", "updatedAt"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Lead generated via affiliate tracking",
+      "type": "object",
+      "properties": {
+        "submissionId": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "department": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "status": { "type": "string", "enum": ["New Lead", "Contacted", "Interested", "Campus Visit", "Applied", "Admitted", "Closed"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["submissionId", "creatorId", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/Submission" },
+      "description": "Submissions requiring approval"
+    },
+    "/leads/{leadId}": {
+      "schema": { "$ref": "#/entities/Lead" },
+      "description": "Captured admissions leads"
+    }
+  }
+}
