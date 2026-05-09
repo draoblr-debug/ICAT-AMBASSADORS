@@ -40,7 +40,10 @@ export function DashboardLayout() {
   const SidebarContent = () => (
     <>
       <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-        <div className="font-bold text-xl tracking-tight text-blue-600">ICAT UGC Tracker</div>
+        <div className="flex items-center space-x-2">
+          <img src="/icat-logo.png" alt="ICAT Logo" className="h-10 object-contain" referrerPolicy="no-referrer" />
+          <div className="font-bold text-xl tracking-tight text-blue-900 hidden md:block">Ambassadors</div>
+        </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
           <X className="h-6 w-6 text-gray-600" />
         </button>
@@ -118,7 +121,10 @@ export function DashboardLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 md:hidden">
-          <div className="font-bold text-lg text-blue-600">ICAT Tracker</div>
+          <div className="flex items-center space-x-2">
+            <img src="/icat-logo.png" alt="ICAT Logo" className="h-8 object-contain" referrerPolicy="no-referrer" />
+            <div className="font-bold text-lg text-blue-900">Ambassadors</div>
+          </div>
           <button onClick={() => setIsMobileMenuOpen(true)}>
             <Menu className="h-6 w-6 text-gray-600" />
           </button>

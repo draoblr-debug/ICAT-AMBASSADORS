@@ -136,8 +136,9 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-lg border-0">
-        <CardHeader className="text-center pb-6 border-b border-gray-100">
-          <CardTitle className="text-2xl font-bold tracking-tight text-blue-900">ICAT UGC Tracker</CardTitle>
+        <CardHeader className="text-center pb-6 border-b border-gray-100 flex flex-col items-center">
+          <img src="/icat-logo.png" alt="ICAT Logo" className="h-16 object-contain mb-4" referrerPolicy="no-referrer" />
+          <CardTitle className="text-2xl font-bold tracking-tight text-blue-900">ICAT Ambassadors</CardTitle>
           <p className="text-sm text-gray-500 mt-2">Sign in to your account</p>
         </CardHeader>
         <CardContent className="pt-6">

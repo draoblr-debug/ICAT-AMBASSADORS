@@ -48,6 +48,7 @@ export default function CompleteProfile() {
           department: matchedUser.programId || "General",
           collegeId: matchedUser.id,
           year: matchedUser.year || null,
+          passwordChanged: false,
           createdAt: new Date().toISOString()
         });
         await refreshProfile();

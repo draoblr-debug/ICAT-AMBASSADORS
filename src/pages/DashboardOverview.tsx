@@ -104,7 +104,7 @@ export default function DashboardOverview() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Overview</h1>
           <p className="text-gray-500">Welcome back, {profile?.name}</p>
         </div>
-        {['student', 'faculty', 'Student', 'Tutor'].includes(profile?.role || '') ? (
+        {['student', 'faculty', 'Student', 'Tutor', 'Education Manager'].includes(profile?.role || '') ? (
           <Link to="/submit">
             <Button>Submit Content</Button>
           </Link>
@@ -118,12 +118,15 @@ export default function DashboardOverview() {
         <StatCard title="Conversions" value={stats.conversions} icon={TrendingUp} description="Successful admissions" />
       </div>
 
-      {['student', 'faculty', 'Student', 'Tutor'].includes(profile?.role || '') && stats.pending > 0 && (
+      {stats.pending > 0 && (
         <Card className="bg-yellow-50 border-yellow-200">
            <CardContent className="flex items-center p-4">
               <AlertCircle className="h-5 w-5 text-yellow-600 mr-4" />
               <div className="text-sm text-yellow-800">
-                You have {stats.pending} post(s) pending review. Check the <Link to="/submissions" className="font-medium underline">submissions tab</Link> for updates.
+                {['student', 'faculty', 'Student', 'Tutor'].includes(profile?.role || '') 
+                  ? `You have ${stats.pending} post(s) pending review. Check the `
+                  : `There are ${stats.pending} post(s) pending review. Check the `}
+                <Link to="/submissions" className="font-medium underline">submissions tab</Link> for updates.
               </div>
            </CardContent>
         </Card>

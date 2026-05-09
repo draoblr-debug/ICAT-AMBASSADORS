@@ -10,7 +10,7 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\\\-]+$'); }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$'); }
 
     // Hardened RBAC Helpers
     // Users are created securely; roles must be verified.
@@ -31,10 +31,10 @@ service cloud.firestore {
              && data.email is string && data.email.size() > 0 && data.email.size() <= 200
              && data.name is string && data.name.size() > 0 && data.name.size() <= 100
              && data.role in ['student', 'faculty', 'hod', 'admin', 'superadmin', 'Student', 'Tutor', 'HOD', 'Education Manager', 'System Administrator', 'Student Service', 'Dean']
-             && (data.department == null || (data.department is string && data.department.size() <= 100))
-             && (data.collegeId == null || (data.collegeId is string && data.collegeId.size() <= 100))
-             && (data.year == null || data.year is number || data.year is string)
-             && (data.passwordChanged == null || data.passwordChanged is bool)
+             && (data.get('department', null) == null || (data.get('department', null) is string && data.get('department', null).size() <= 100))
+             && (data.get('collegeId', null) == null || (data.get('collegeId', null) is string && data.get('collegeId', null).size() <= 100))
+             && (data.get('year', null) == null || data.get('year', null) is number || data.get('year', null) is string)
+             && (data.get('passwordChanged', null) == null || data.get('passwordChanged', null) is bool)
              && data.createdAt is string && data.createdAt.size() <= 40;
     }
 
