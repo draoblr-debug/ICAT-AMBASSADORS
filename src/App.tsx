@@ -34,8 +34,8 @@ export default function App() {
             <Route path="submissions" element={<Submissions />} />
             <Route path="submit" element={<NewSubmission />} />
             <Route path="change-password" element={<ChangePassword />} />
-            <Route path="leads" element={<ProtectedRoute allowedRoles={['hod', 'admin', 'superadmin', 'HOD', 'System Administrator', 'Education Manager', 'Dean']}><Leads /></ProtectedRoute>} />
-            <Route path="analytics" element={<ProtectedRoute allowedRoles={['hod', 'admin', 'superadmin', 'HOD', 'System Administrator', 'Education Manager', 'Dean']}><Analytics /></ProtectedRoute>} />
+            <Route path="leads" element={<ProtectedRoute allowedRoles={['hod', 'admin', 'superadmin']}><Leads /></ProtectedRoute>} />
+            <Route path="analytics" element={<ProtectedRoute allowedRoles={['hod', 'admin', 'superadmin']}><Analytics /></ProtectedRoute>} />
           </Route>
         </Routes>
       </AuthProvider>

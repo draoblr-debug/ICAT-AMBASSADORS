@@ -3,7 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 
-export type UserRole = 'student' | 'faculty' | 'hod' | 'admin' | 'superadmin' | 'Student' | 'Tutor' | 'HOD' | 'Education Manager' | 'System Administrator' | 'Student Service' | 'Dean';
+export type UserRole = 'student' | 'faculty' | 'hod' | 'admin' | 'superadmin';
 
 export interface UserProfile {
   userId: string;
@@ -26,6 +26,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({ user: null, profile: null, loading: true, refreshProfile: async () => {} });
 
+function normalizeRole(r: string): UserRole {
+  if (r === 'Student' || r === 'student') return 'student';
+  if (r === 'Tutor' || r === 'faculty') return 'faculty';
+  if (r === 'HOD' || r === 'hod') return 'hod';
+  if (r === 'System Administrator' || r === 'superadmin') return 'superadmin';
+  if (r === 'Education Manager' || r === 'Student Service' || r === 'Dean' || r === 'admin') return 'admin';
+  return 'student'; // Fallback
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -37,7 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const docRef = doc(db, 'users', auth.currentUser.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
+          const rawData = docSnap.data();
+          setProfile({ ...rawData, role: normalizeRole(rawData.role) } as UserProfile);
         } else {
           setProfile(null);
         }
@@ -59,9 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const docRef = doc(db, 'users', currUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile);
+             const rawData = docSnap.data();
+             setProfile({ ...rawData, role: normalizeRole(rawData.role) } as UserProfile);
           } else {
-            setProfile(null);
+             setProfile(null);
           }
         } catch (error) {
           try {

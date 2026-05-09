@@ -29,7 +29,7 @@ export function DashboardLayout() {
     { name: "Submissions", path: "/submissions", icon: Send },
   ];
 
-  const adminRoles = ['hod', 'admin', 'superadmin', 'HOD', 'System Administrator', 'Education Manager', 'Dean'];
+  const adminRoles = ['hod', 'admin', 'superadmin'];
   if (profile?.role && adminRoles.includes(profile.role)) {
     navItems.push(
       { name: "Leads Pipeline", path: "/leads", icon: Users },

@@ -30,7 +30,7 @@ export default function Submissions() {
   const [loading, setLoading] = useState(true);
   const [qrCodeData, setQrCodeData] = useState<{ id: string, url: string } | null>(null);
 
-  const adminRoles = ['hod', 'admin', 'superadmin', 'HOD', 'System Administrator', 'Education Manager', 'Dean'];
+  const adminRoles = ['hod', 'admin', 'superadmin'];
   const isAdmin = profile?.role && adminRoles.includes(profile.role);
 
   const loadSubmissions = async () => {

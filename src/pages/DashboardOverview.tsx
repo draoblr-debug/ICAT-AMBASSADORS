@@ -41,7 +41,7 @@ export default function DashboardOverview() {
       try {
         const subsRef = collection(db, "submissions");
         let q;
-        const adminRoles = ['hod', 'admin', 'superadmin', 'HOD', 'System Administrator', 'Education Manager', 'Dean'];
+        const adminRoles = ['hod', 'admin', 'superadmin'];
         if (profile?.role && adminRoles.includes(profile.role)) {
            q = query(subsRef); // Admin sees all (Wait, rule says staff can read all, this evaluates ok)
         } else {
@@ -104,7 +104,7 @@ export default function DashboardOverview() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Overview</h1>
           <p className="text-gray-500">Welcome back, {profile?.name}</p>
         </div>
-        {['student', 'faculty', 'Student', 'Tutor', 'Education Manager'].includes(profile?.role || '') ? (
+        {['student', 'faculty', 'admin'].includes(profile?.role || '') ? (
           <Link to="/submit">
             <Button>Submit Content</Button>
           </Link>
@@ -123,7 +123,7 @@ export default function DashboardOverview() {
            <CardContent className="flex items-center p-4">
               <AlertCircle className="h-5 w-5 text-yellow-600 mr-4" />
               <div className="text-sm text-yellow-800">
-                {['student', 'faculty', 'Student', 'Tutor'].includes(profile?.role || '') 
+                {['student', 'faculty'].includes(profile?.role || '') 
                   ? `You have ${stats.pending} post(s) pending review. Check the `
                   : `There are ${stats.pending} post(s) pending review. Check the `}
                 <Link to="/submissions" className="font-medium underline">submissions tab</Link> for updates.

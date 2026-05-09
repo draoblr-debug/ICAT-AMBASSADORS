@@ -24,15 +24,20 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const isProd = process.env.NODE_ENV === 'production';
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
+      userId: isProd ? '[REDACTED]' : auth.currentUser?.uid,
+      email: isProd ? '[REDACTED]' : auth.currentUser?.email,
     },
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  if (!isProd) {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+  } else {
+    console.error(`Firestore Error [${operationType}] on ${path}:`, error instanceof Error ? error.message : String(error));
+  }
   throw new Error(JSON.stringify(errInfo));
 }

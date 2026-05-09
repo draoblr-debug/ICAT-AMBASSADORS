@@ -40,17 +40,21 @@ export default function CompleteProfile() {
       }
 
       try {
-        await setDoc(doc(db, "users", user.uid), {
+        const payload: any = {
           userId: user.uid,
           email: matchedUser.email,
           name: matchedUser.name,
           role: matchedUser.role,
           department: matchedUser.programId || "General",
           collegeId: matchedUser.id,
-          year: matchedUser.year || null,
           passwordChanged: false,
           createdAt: new Date().toISOString()
-        });
+        };
+        if (matchedUser.year) {
+          payload.year = matchedUser.year;
+        }
+
+        await setDoc(doc(db, "users", user.uid), payload);
         await refreshProfile();
         navigate("/");
       } catch (err: any) {

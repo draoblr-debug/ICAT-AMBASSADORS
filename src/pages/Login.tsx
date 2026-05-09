@@ -27,7 +27,7 @@ export default function Login() {
 
   const availableYears = useMemo(() => {
     const years = students.map(s => String(s.year)).filter(y => y && y !== 'undefined' && y !== 'null');
-    return Array.from(new Set(years)).sort((a, b) => a.localeCompare(b));
+    return Array.from(new Set<string>(years)).sort((a, b) => a.localeCompare(b));
   }, [students]);
 
   const availableDepartments = useMemo(() => {
@@ -77,6 +77,9 @@ export default function Login() {
       const inputPass = password.trim();
       const defaultPass = matchedUser.password.trim();
 
+      // SECURITY NOTE: Client-side account provisioning using a local CSV of default passwords
+      // is a security risk. In a real-world scenario with a backend, this should be handled
+      // by a Cloud Function or Admin SDK. We leave it enabled for the preview/demo environment so the app functions.
       if (inputPass === defaultPass || inputPass.toLowerCase() === defaultPass.toLowerCase()) {
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, selectedUserEmail, inputPass);
